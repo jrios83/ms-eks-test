@@ -1,0 +1,22 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: sad-ms-planillas-dev
+  name: deployment-sad-ms-planillas-dev
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: app-sad-ms-planillas-dev
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: app-sad-ms-planillas-dev
+    spec:
+      containers:
+      - image: CONTAINER_IMAGE
+        imagePullPolicy: Always
+        name: app-sad-ms-planillas-dev
+        ports:
+        - containerPort: 8080

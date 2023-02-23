@@ -1,0 +1,48 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: The AWS Cloudformation template for creating cross account role to be assumed by DevOps account to carry out deploy
+
+Parameters:
+  ToolsAccountID:
+    Description: Account ID of the DevOps AWS Account that initiates code deployments to this account.
+    Type: String
+    ConstraintDescription: Must be a valid AWS Account ID without hyphens.
+    AllowedPattern: '\d{12}'
+    #MinLength: 12
+    #MaxLenght: 12
+  KeyArn:
+    Description: Provide the KMS key ARN if you've deployed the pipeline stack
+    Type: String
+    ConstraintDescription: Must be a valid AWS ARN for a KMS Key in the TOOLS account
+    Default: ''
+
+Resources:
+  CrossAccountDeploymentRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: CodePipelineCrossAccountRole
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          -
+            Effect: Allow
+            Principal:
+              AWS:
+                - !Sub arn:aws:iam::${ToolsAccountID}:root
+            Action:
+              - sts:AssumeRole
+  
+  CrossAccountDeploymentPolicy:
+    Condition: DeployPolicy
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Allows pipeline in master account
+      ManagedPolicyName: CodePipelineCrossAccountPolicy
+      Roles: !Ref CrossAccountDeploymentRole
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - iam:PassRole
+            Resource: '*'
+            Effect: Allow

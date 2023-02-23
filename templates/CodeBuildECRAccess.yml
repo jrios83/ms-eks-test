@@ -1,0 +1,50 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: |
+  The AWS Cloudformation template for creating ECR access role.
+  This role is for the DevOps account in order to push the images on ECR. 
+Parameters:
+  ToolsAccountID:
+    Description: Account ID of the DevOps AWS Account that initiates code deployments to this account.
+    Type: String
+    ConstraintDescription: Must be a valid AWS Account ID without hyphens.
+    AllowedPattern: '\d{12}'
+    #MinLength: 12
+    #MaxLenght: 12
+
+Resources:
+  ECRPushRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: ECRPushRole
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          -
+            Effect: Allow
+            Principal:
+              AWS:
+                - !Sub arn:aws:iam::${ToolsAccountID}:root
+            Action:
+              - sts:AssumeRole
+  
+  CloudFormationDeploymentPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Allows pipeline in TOOLS account
+      ManagedPolicyName: ECRPushPolicy
+      Roles:
+        - !Ref ECRPushRole
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - ecr:GetRegistryPolicy
+              - ecr:DescribeRegistry*
+              - ecr:GetAuthorizationToken
+              - sts:*
+              - ecr:DeleteRegistryPolicy
+              - ecr:PutRegistryPolicy
+              - ecr:PutReplicationConfiguration
+            Resource: !Sub arn:aws:ecr:us-east-1:${ToolsAccountID}:repository/sad-ms-test
+            Effect: Allow

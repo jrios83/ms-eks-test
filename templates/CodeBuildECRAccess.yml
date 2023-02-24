@@ -46,5 +46,10 @@ Resources:
               - ecr:DeleteRegistryPolicy
               - ecr:PutRegistryPolicy
               - ecr:PutReplicationConfiguration
+            Resource: "*"
+            Effect: Allow
+
+          - Action:
+              - ecr:*
             Resource: !Sub arn:aws:ecr:us-east-1:${ToolsAccountID}:repository/sad-ms-test
             Effect: Allow
